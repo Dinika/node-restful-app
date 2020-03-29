@@ -1,5 +1,4 @@
 exports.getPosts = (req, res, next) => {
-  console.log("HERE")
   res.status(200).json({
     posts: [
       {
@@ -7,5 +6,19 @@ exports.getPosts = (req, res, next) => {
         content: 'Woah'
       }
     ]
+  })
+}
+
+exports.createPosts = (req, res, next) => {
+  // Create post in db
+  const { title, content } = req.body
+  console.log(req.body)
+  res.status(201).json({
+    message: 'Post created successfully',
+    post: {
+      id: new Date().toISOString(),
+      title: title,
+      content: content
+    }
   })
 }
