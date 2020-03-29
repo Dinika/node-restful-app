@@ -4,9 +4,28 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const mongooseConnectionUri = require('./secrets').mongoConnectionUri
 const path = require('path')
-
+const multer = require('multer'
+)
 const app = express()
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'images')
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + '-' + file.originalname)
+  }
+})
+const fileFilter = (req, file, cb) => {
+  const acceptedFormats = ['image/png', 'image/jpeg', 'image/jpg']
+  if (acceptedFormats.includes(file.mimetype)) {
+    cb(null, true)
+  } else {
+    cb(null, false)
+  }
+}
+
 app.use(bodyParser.json())
+app.use(multer({ storage: fileStorage, fileFilter: fileFilter }).single('image'))
 app.use('/images', express.static(path.join(__dirname, 'images')))
 
 app.use((req, res, next) => {

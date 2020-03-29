@@ -2,35 +2,42 @@ const { validationResult } = require('express-validator')
 const Post = require('../models/post')
 
 exports.getPosts = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: '1',
-        title: 'First post',
-        content: 'Woah',
-        images: 'images/david.png',
-        creator: {
-          name: 'Dinika'
-        },
-        createdAt: new Date()
+  Post.find()
+    .then(posts => {
+      res.status(200).json({
+        message: 'Posts fetched successfully',
+        posts: posts
+      })
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500
       }
-    ]
-  })
+      next(err)
+    })
 }
 
 exports.createPost = (req, res, next) => {
-  // Create post in db
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect')
     error.statusCode = 422
     throw error
   }
+  console.log("IMAGE", req.image)
+  console.log("FILE", req.file)
+
+  if (!req.file) {
+    const error = new Error('No image provided')
+    error.statusCode = 422
+    throw error
+  }
+  const imageUrl = req.file.path
   const { title, content } = req.body
   const post = new Post({
     title: title,
     content: content,
-    imageUrl: 'images/david.png',
+    imageUrl: imageUrl,
     creator: {
       name: 'Dinika'
     }
@@ -50,4 +57,28 @@ exports.createPost = (req, res, next) => {
       next(err)
     })
 
+}
+
+exports.getPost = (req, res, next) => {
+  const postId = req.params.postId
+  Post.findById(postId)
+    .then(post => {
+      if (!post) {
+        const error = new Error('Could not find the post')
+        error.statusCode = 404
+        throw error
+      }
+      console.log("POST", post)
+      res.status(200)
+        .json({
+          message: 'Post found',
+          post: post
+        })
+    })
+    .catch(err => {
+      if (!err.statusCode) {
+        err.statusCode = 500
+      }
+      next(err)
+    })
 }
