@@ -1,7 +1,7 @@
 const express = require('express')
 const feedControllder = require('../controllers/feed')
 const router = express.Router()
-const { body } = require('express-validator/check')
+const { body } = require('express-validator')
 
 router.get('/posts', feedControllder.getPosts)
 router.post('/post',
