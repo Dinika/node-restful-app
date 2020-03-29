@@ -1,7 +1,8 @@
 const express = require('express')
 const feedRouter = require('./routes/feed')
 const bodyParser = require('body-parser')
-
+const mongoose = require('mongoose')
+const mongooseConnectionUri = require('./secrets').mongoConnectionUri
 
 const app = express()
 app.use(bodyParser.json())
@@ -13,4 +14,12 @@ app.use((req, res, next) => {
 })
 
 app.use('/feed', feedRouter)
-app.listen(8000)
+
+mongoose
+  .connect(mongooseConnectionUri)
+  .then(result => {
+    app.listen(8000)
+  })
+  .catch(err => {
+    console.log(err)
+  })
