@@ -107,7 +107,6 @@ exports.getPost = (req, res, next) => {
 
 exports.updatePost = (req, res, next) => {
   const postId = req.params.postId
-  console.log("HERE", postId)
   const errors = validationResult(req)
   if (!errors.isEmpty()) {
     const error = new Error('Validation failed, entered data is incorrect')
@@ -127,6 +126,11 @@ exports.updatePost = (req, res, next) => {
         const error = new Error('Could not find the post')
         error.statusCode = 404
         throw error
+      }
+      if (post.creator.toString() !== req.userId) {
+        const authError = new Error('Not Authorized')
+        authError.statusCode = 403
+        throw authError
       }
       if (imageUrl !== post.imageUrl) {
         clearImage(post.imageUrl)
@@ -154,13 +158,17 @@ exports.deletePost = (req, res, next) => {
   const postId = req.params.postId
   Post.findById(postId)
     .then(post => {
-      // CHeck post belongs to user
-      clearImage(post.imageUrl)
       if (!post) {
         const error = new Error('Could not find the post')
         error.statusCode = 404
         throw error
       }
+      if (post.creator.toString() !== req.userId) {
+        const authError = new Error('Not Authorized')
+        authError.statusCode = 403
+        throw authError
+      }
+      clearImage(post.imageUrl)
       return Post.findByIdAndRemove(postId)
     })
     .then(result => {
