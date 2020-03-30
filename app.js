@@ -5,8 +5,9 @@ const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const mongooseConnectionUri = require('./secrets').mongoConnectionUri
 const path = require('path')
-const multer = require('multer'
-)
+const multer = require('multer')
+const userRouter = require('./routes/user')
+
 const app = express()
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -38,6 +39,7 @@ app.use((req, res, next) => {
 
 app.use('/feed', feedRouter)
 app.use('/auth', authRouter)
+app.use('/user', userRouter)
 
 app.use((error, req, res, next) => {
   console.log(error)
