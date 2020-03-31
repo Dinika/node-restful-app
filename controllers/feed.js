@@ -65,7 +65,13 @@ exports.createPost = (req, res, next) => {
     .then(result => {
       io.getIO().emit('posts', {
         action: 'create',
-        post: post
+        post: {
+          ...post,
+          creator: {
+            _id: creator._id,
+            name: creator.name
+          }
+        }
       })
       res.status(201).json({
         message: 'Post created successfully',
@@ -124,14 +130,14 @@ exports.updatePost = (req, res, next) => {
     error.statusCode = 422
     throw error
   }
-  Post.findById(postId)
+  Post.findById(postId).populate('creator')
     .then(post => {
       if (!post) {
         const error = new Error('Could not find the post')
         error.statusCode = 404
         throw error
       }
-      if (post.creator.toString() !== req.userId) {
+      if (post.creator._id.toString() !== req.userId) {
         const authError = new Error('Not Authorized')
         authError.statusCode = 403
         throw authError
@@ -145,6 +151,10 @@ exports.updatePost = (req, res, next) => {
       return post.save()
     })
     .then(result => {
+      io.getIO().emit('posts', {
+        action: 'update',
+        post: result
+      })
       res.status(201).json({
         message: 'Post successfully updated',
         post: result
