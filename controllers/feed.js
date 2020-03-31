@@ -13,6 +13,7 @@ exports.getPosts = async (req, res, next) => {
     const totalItems = await Post.find().countDocuments()
     const posts = await Post.find()
       .populate('creator')
+      .sort({ createdAt: -1 })
       .skip((page - 1) * perPage)
       .limit(perPage)
 
@@ -63,12 +64,13 @@ exports.createPost = (req, res, next) => {
       return user.save()
     })
     .then(result => {
+      const updatedCreator = { _id: req.userId, name: creator.name }
       io.getIO().emit('posts', {
         action: 'create',
         post: {
-          ...post,
+          ...post._doc,
           creator: {
-            _id: creator._id,
+            _id: req.userId,
             name: creator.name
           }
         }
@@ -193,6 +195,7 @@ exports.deletePost = (req, res, next) => {
       return user.save()
     })
     .then(result => {
+      io.getIO().emit('posts', { action: 'delete', post: postId })
       res.status(200).json({ message: 'Post deleted' })
     })
     .catch(err => {
