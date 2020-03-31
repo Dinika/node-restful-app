@@ -57,9 +57,12 @@ mongoose
   .connect(mongooseConnectionUri)
   .then(result => {
     const server = app.listen(8000)
-    const io = require('socket.io')(server)
+    const io = require('./socket').init(server)
     io.on('connection', socket => {
       console.log('Client connected')
+      socket.on('disconnect', () => {
+        console.log("Client disconnected")
+      })
     })
   })
   .catch(err => {
