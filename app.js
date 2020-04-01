@@ -1,12 +1,12 @@
 const express = require('express')
-const feedRouter = require('./routes/feed')
-const authRouter = require('./routes/auth')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 const mongooseConnectionUri = require('./secrets').mongoConnectionUri
 const path = require('path')
 const multer = require('multer')
-const userRouter = require('./routes/user')
+const graphqlHttp = require('express-graphql')
+const graphqlSchema = require('./graphql/schema')
+const graphqlResolver = require('./graphql/resolver')
 
 const app = express()
 const fileStorage = multer.diskStorage({
@@ -37,9 +37,10 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use('/feed', feedRouter)
-app.use('/auth', authRouter)
-app.use('/user', userRouter)
+app.use('/graphql', graphqlHttp({
+  schema: graphqlSchema,
+  rootValue: graphqlResolver
+}))
 
 app.use((error, req, res, next) => {
   console.log(error)
@@ -56,14 +57,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(mongooseConnectionUri)
   .then(result => {
-    const server = app.listen(8000)
-    const io = require('./socket').init(server)
-    io.on('connection', socket => {
-      console.log('Client connected')
-      socket.on('disconnect', () => {
-        console.log("Client disconnected")
-      })
-    })
+    app.listen(8000)
   })
   .catch(err => {
     console.log(err)
