@@ -34,6 +34,15 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, POST, PATCH, DELETE')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  // The broswer sends an 'OPTION' request when it first tries
+  // to communicate with our server. This request is automatically blocked
+  // by express grapghql since it blocks any request with a header other than 'GET' and 'POST'
+  // Therefore, we have to handle such an incoming OPTIONS request manually.
+  if (req.method === 'OPTIONS') {
+    // Just send an empty response
+    res.status(200).send()
+    return
+  }
   next()
 })
 
