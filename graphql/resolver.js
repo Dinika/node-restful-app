@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const Post = require('../models/post')
 const bcrypt = require('bcryptjs')
 const validator = require('validator')
 const jwt = require('jsonwebtoken')
@@ -60,5 +61,33 @@ module.exports = {
       jwtSignKey,
       { expiresIn: '1h' })
     return { token, userId: user._id.toString() }
+  },
+
+  createPost: async function ({ postInput }, req) {
+    const errors = []
+    if (validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, { min: 3 })) {
+      errors.push({ message: 'Title is too short' })
+    }
+    if (validator.isEmpty(postInput.content) || !validator.isLength(postInput.content, { min: 5 })) {
+      errors.push({ message: 'Content is too short' })
+    }
+    if (errors.length > 1) {
+      const error = new Error('Invalid input')
+      error.data = errors
+      error.code = 422
+      throw error
+    }
+    const post = new Post({
+      title: postInput.title,
+      content: postInput.content,
+      imageUrl: postInput.imageUrl
+    })
+    const createdPost = await post.save()
+    return {
+      ...createdPost._doc,
+      _id: createdPost._id.toString(),
+      createdAt: createdPost.createdAt.toISOString(),
+      updatedAt: createdPost.updatedAt.toISOString()
+    }
   }
 }
