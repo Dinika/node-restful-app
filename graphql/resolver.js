@@ -53,7 +53,7 @@ module.exports = {
       error.code = 401
       throw error
     }
-    const token = jet.sign({
+    const token = jwt.sign({
       userId: user._id.toString(),
       email: user.email
     },
