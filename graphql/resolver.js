@@ -112,6 +112,7 @@ module.exports = {
       error.code = 401
       throw error
     }
+    console.log("HERE", page)
     if (!page) {
       page = 1
     }
