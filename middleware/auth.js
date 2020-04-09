@@ -13,9 +13,8 @@ module.exports = (req, res, next) => {
   try {
     decodedToken = jwt.verify(token, jwtSignatureSecret)
   } catch (err) {
-    req.isAuth = false
-    next()
-    return
+    error.statusCode = 401
+    throw error
   }
   if (!decodedToken) {
     req.isAuth = false
