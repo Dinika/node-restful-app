@@ -36,7 +36,7 @@ exports.signup = (req, res, next) => {
 exports.login = (req, res, next) => {
   const { email, password } = req.body
   let dbUser
-  User.findOne({ email: email })
+  return User.findOne({ email: email })
     .then(user => {
       if (!user) {
         const error = new Error('User with this email could not be found')
@@ -62,11 +62,13 @@ exports.login = (req, res, next) => {
         token: token,
         userId: dbUser._id.toString()
       })
+      return;
     })
     .catch(err => {
       if (!err.statusCode) {
         err.statusCode = 500
       }
       next(err)
+      return err
     })
 }
