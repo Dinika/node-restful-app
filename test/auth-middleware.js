@@ -1,22 +1,38 @@
 const expect = require('chai').expect
 const auth = require('../middleware/auth')
+const jwt = require('jsonwebtoken')
 
-it('should throw an error if an authorization header is present', function () {
-  const req = {
-    get: function () {
-      return null
+describe('Auth middleware', function () {
+  it('should set isAuth to false if req has no Authorization header', function () {
+    const req = {
+      get: function () {
+        return null
+      }
     }
-  }
+    auth(req, {}, () => { })
+    expect(req.isAuth).to.equal(false)
+  })
 
-  expect(auth.bind(this, req, {}, () => { })).to.throw('Not authenticated')
-})
-
-it('should throw an error id auth header does not contain auth key', function () {
-  const req = {
-    get: function () {
-      return 'xyz'
+  it('should set isAuth to false if req has Authorization header specified if wrong format', function () {
+    const req = {
+      get: function () {
+        return 'xyz'
+      }
     }
-  }
+    auth(req, {}, () => { })
+    expect(req.isAuth).to.equal(false)
+  })
 
-  expect(auth.bind(this, req, {}, () => { })).to.throw()
+  it('should add userId to request if request has valid token', function () {
+    const req = {
+      get: function (header) {
+        return 'Bearer xyz'
+      }
+    }
+    jwt.verify = () => {
+      return { userId: 'abc' }
+    }
+    auth(req, {}, () => { })
+    expect(req).to.have.property('userId')
+  })
 })
