@@ -1,6 +1,7 @@
 const expect = require('chai').expect
 const auth = require('../middleware/auth')
 const jwt = require('jsonwebtoken')
+const sinon = require('sinon')
 
 describe('Auth middleware', function () {
   it('should set isAuth to false if req has no Authorization header', function () {
@@ -29,10 +30,12 @@ describe('Auth middleware', function () {
         return 'Bearer xyz'
       }
     }
-    jwt.verify = () => {
-      return { userId: 'abc' }
-    }
+    sinon.stub(jwt, 'verify')
+    jwt.verify.returns({ userId: 'abc' })
     auth(req, {}, () => { })
     expect(req).to.have.property('userId')
+    expect(req.userId).to.equal('abc')
+    expect(jwt.verify.called).to.be.true
+    jwt.verify.restore()
   })
 })
