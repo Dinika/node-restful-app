@@ -1,7 +1,7 @@
 const { validationResult } = require('express-validator')
 const Post = require('../models/post')
 const User = require('../models/user')
-const io = require('../socket')
+//const io = require('../socket')
 
 exports.getPosts = async (req, res, next) => {
   const page = req.query.page || 1
@@ -51,7 +51,7 @@ exports.createPost = (req, res, next) => {
     imageUrl: imageUrl,
     creator: req.userId
   })
-  post
+  return post
     .save()
     .then(result => {
       return User.findById(req.userId)
@@ -63,16 +63,16 @@ exports.createPost = (req, res, next) => {
     })
     .then(result => {
       const updatedCreator = { _id: req.userId, name: creator.name }
-      io.getIO().emit('posts', {
-        action: 'create',
-        post: {
-          ...post._doc,
-          creator: {
-            _id: req.userId,
-            name: creator.name
-          }
-        }
-      })
+      // io.getIO().emit('posts', {
+      //   action: 'create',
+      //   post: {
+      //     ...post._doc,
+      //     creator: {
+      //       _id: req.userId,
+      //       name: creator.name
+      //     }
+      //   }
+      // })
       res.status(201).json({
         message: 'Post created successfully',
         post: post,
@@ -151,10 +151,10 @@ exports.updatePost = (req, res, next) => {
       return post.save()
     })
     .then(result => {
-      io.getIO().emit('posts', {
-        action: 'update',
-        post: result
-      })
+      // io.getIO().emit('posts', {
+      //   action: 'update',
+      //   post: result
+      // })
       res.status(201).json({
         message: 'Post successfully updated',
         post: result
@@ -193,7 +193,7 @@ exports.deletePost = (req, res, next) => {
       return user.save()
     })
     .then(result => {
-      io.getIO().emit('posts', { action: 'delete', post: postId })
+      //io.getIO().emit('posts', { action: 'delete', post: postId })
       res.status(200).json({ message: 'Post deleted' })
     })
     .catch(err => {
