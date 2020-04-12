@@ -9,7 +9,7 @@ exports.getStatus = (req, res, next) => {
     throw error
   }
 
-  User.findById(userId)
+  return User.findById(userId)
     .then(user => {
       if (!user) {
         const error = new Error('User not found')
